@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @ConfigurationPropertiesScan
 @EnableScheduling
+@org.springframework.scheduling.annotation.EnableAsync
 public class SaveNestApplication {
     public static void main(String[] args) {
         SpringApplication.run(SaveNestApplication.class, args);

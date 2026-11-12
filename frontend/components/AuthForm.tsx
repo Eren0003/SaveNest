@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 
-export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
+export function AuthForm({ mode, notice }: { mode: 'login' | 'register'; notice?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +35,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     <main className="flex min-h-screen items-center justify-center p-4">
       <form onSubmit={submit} className="card w-full max-w-sm space-y-4 p-6" aria-labelledby="auth-title">
         <h1 id="auth-title" className="text-xl font-bold">{isRegister ? 'Create your SaveNest account' : 'Sign in to SaveNest'}</h1>
+        {notice && !error && (
+          <p role="status" className="rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950 dark:text-green-300">
+            {notice}
+          </p>
+        )}
         {isRegister && (
           <div>
             <label htmlFor="name" className="label">Display name</label>
@@ -54,6 +59,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             autoComplete={isRegister ? 'new-password' : 'current-password'}
             value={password} onChange={(e) => setPassword(e.target.value)} />
           {isRegister && <p id="pw-hint" className="mt-1 text-xs text-slate-500">At least 12 characters.</p>}
+          {!isRegister && (
+            <p className="mt-1 text-right text-sm">
+              <Link className="underline" href="/forgot-password">Forgot password?</Link>
+            </p>
+          )}
         </div>
         {error && <p role="alert" className="text-sm text-red-700 dark:text-red-400">{error}</p>}
         <button type="submit" className="btn-primary w-full" disabled={busy}>

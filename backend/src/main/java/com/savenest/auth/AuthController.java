@@ -36,11 +36,14 @@ public class AuthController {
     private final SecurityContextRepository securityContextRepository;
     private final CsrfTokenRepository csrfTokenRepository;
     private final RateLimiter rateLimiter;
+    private final PasswordResetService passwordResetService;
     private final SecurityContextHolderStrategy holder = SecurityContextHolder.getContextHolderStrategy();
 
     public AuthController(AuthService authService, AuthenticationManager authenticationManager,
                           SecurityContextRepository securityContextRepository,
-                          CsrfTokenRepository csrfTokenRepository, RateLimiter rateLimiter) {
+                          CsrfTokenRepository csrfTokenRepository, RateLimiter rateLimiter,
+                          PasswordResetService passwordResetService) {
+        this.passwordResetService = passwordResetService;
         this.authService = authService;
         this.authenticationManager = authenticationManager;
         this.securityContextRepository = securityContextRepository;
@@ -72,6 +75,36 @@ public class AuthController {
         establishSession(auth, req, res);
         AppUserPrincipal principal = (AppUserPrincipal) auth.getPrincipal();
         return DataResponse.of(AuthDtos.UserDto.from(authService.get(principal.getUserId())));
+    }
+
+    static final String GENERIC_RESET_MESSAGE = "If this email is registered, a verification code has been sent.";
+
+    @PostMapping("/forgot-password")
+    public DataResponse<AuthDtos.MessageDto> forgotPassword(@Valid @RequestBody AuthDtos.ForgotPasswordRequest body,
+                                                            HttpServletRequest req) {
+        rateLimiter.check(RateLimiter.Bucket.AUTH, req.getRemoteAddr());
+        passwordResetService.requestCode(body.email(), req.getRemoteAddr());
+        return DataResponse.of(new AuthDtos.MessageDto(GENERIC_RESET_MESSAGE));
+    }
+
+    @PostMapping("/verify-reset-code")
+    public DataResponse<AuthDtos.ResetTokenDto> verifyResetCode(@Valid @RequestBody AuthDtos.VerifyResetCodeRequest body,
+                                                                HttpServletRequest req) {
+        rateLimiter.check(RateLimiter.Bucket.AUTH, req.getRemoteAddr());
+        String token = passwordResetService.verifyCode(body.email(), body.code(), req.getRemoteAddr());
+        return DataResponse.of(new AuthDtos.ResetTokenDto(token, PasswordResetService.TOKEN_VALIDITY.toSeconds()));
+    }
+
+    @PostMapping("/reset-password")
+    public DataResponse<AuthDtos.MessageDto> resetPassword(@Valid @RequestBody AuthDtos.ResetPasswordRequest body,
+                                                           HttpServletRequest req, HttpServletResponse res,
+                                                           Authentication auth) {
+        rateLimiter.check(RateLimiter.Bucket.AUTH, req.getRemoteAddr());
+        passwordResetService.resetPassword(body.resetToken(), body.newPassword(), body.confirmPassword());
+        // Also drop the caller's own session/CSRF token if they happened to be signed in.
+        new SecurityContextLogoutHandler().logout(req, res, auth);
+        csrfTokenRepository.saveToken(null, req, res);
+        return DataResponse.of(new AuthDtos.MessageDto("Your password has been reset. Please sign in."));
     }
 
     @PostMapping("/logout")

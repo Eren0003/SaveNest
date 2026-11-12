@@ -108,6 +108,11 @@ export const api = {
   register: (email: string, password: string, displayName: string) =>
     request<User>('POST', '/api/auth/register', { email, password, displayName }),
   logout: () => request<void>('POST', '/api/auth/logout'),
+  forgotPassword: (email: string) => request<{ message: string }>('POST', '/api/auth/forgot-password', { email }),
+  verifyResetCode: (email: string, code: string) =>
+    request<{ resetToken: string; expiresInSeconds: number }>('POST', '/api/auth/verify-reset-code', { email, code }),
+  resetPassword: (resetToken: string, newPassword: string, confirmPassword: string) =>
+    request<{ message: string }>('POST', '/api/auth/reset-password', { resetToken, newPassword, confirmPassword }),
 
   classify: (url: string, signal?: AbortSignal) => request<ClassifyResult>('POST', '/api/classify', { url }, signal),
   groups: () => request<GroupCount[]>('GET', '/api/groups'),

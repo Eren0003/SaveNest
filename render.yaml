@@ -34,6 +34,21 @@ services:
         value: framework
       - key: BCRYPT_STRENGTH
         value: "10"
+      - key: PASSWORD_RESET_SECRET
+        generateValue: true
+      # Free SMTP (e.g. Brevo: smtp-relay.brevo.com:587). Set the values in the dashboard.
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: SUPPORT_EMAIL
+        sync: false
       - key: JAVA_TOOL_OPTIONS
         value: "-Xmx300m -XX:+UseSerialGC"
 

@@ -72,7 +72,8 @@ public class SecurityConfig {
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/api/auth/csrf", "/actuator/health").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register",
+                        "/api/auth/forgot-password", "/api/auth/verify-reset-code", "/api/auth/reset-password").permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().denyAll())
             .formLogin(f -> f.disable())
