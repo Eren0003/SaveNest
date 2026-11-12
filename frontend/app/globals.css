@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+
+body { @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100; }
+
+:focus-visible { @apply outline-2 outline-offset-2 outline-accent; outline-style: solid; }
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm font-medium min-h-[40px] disabled:opacity-50; }
+  .btn-primary { @apply btn bg-accent text-accent-fg hover:bg-indigo-700; }
+  .btn-ghost { @apply btn hover:bg-slate-200 dark:hover:bg-slate-800; }
+  .input { @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900; }
+  .label { @apply mb-1 block text-sm font-medium; }
+  .badge { @apply inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-medium border-slate-300 dark:border-slate-600; }
+  .card { @apply rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+dialog::backdrop { background: rgb(0 0 0 / 0.5); }

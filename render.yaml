@@ -1,0 +1,52 @@
+# Render Blueprint (free tier): Postgres + Spring Boot backend + Next.js frontend.
+databases:
+  - name: savenest-db
+    plan: free
+    databaseName: savenest
+    user: savenest
+
+services:
+  - type: web
+    name: savenest-backend
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_HOST
+        fromDatabase: { name: savenest-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: savenest-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: savenest-db, property: database }
+      - key: DATABASE_USERNAME
+        fromDatabase: { name: savenest-db, property: user }
+      - key: DATABASE_PASSWORD
+        fromDatabase: { name: savenest-db, property: password }
+      - key: PORT
+        value: "8080"
+      - key: SERVER_PORT
+        value: "8080"
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: FORWARD_HEADERS_STRATEGY
+        value: framework
+      - key: BCRYPT_STRENGTH
+        value: "10"
+      - key: JAVA_TOOL_OPTIONS
+        value: "-Xmx300m -XX:+UseSerialGC"
+
+  - type: web
+    name: savenest-frontend
+    runtime: docker
+    plan: free
+    rootDir: frontend
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: "3000"
+      # Public URL of the backend, e.g. https://savenest-backend.onrender.com
+      # (free services cannot receive private-network traffic). Set in the dashboard.
+      - key: BACKEND_URL
+        sync: false

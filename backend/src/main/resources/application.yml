@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: savenest
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:savenest}}
+    username: ${DATABASE_USERNAME:savenest}
+    password: ${DATABASE_PASSWORD:change-me}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  session:
+    jdbc:
+      # Schema is owned by Flyway (V1), never auto-created.
+      initialize-schema: never
+      cleanup-cron: "0 */10 * * * *"
+    timeout: ${SESSION_TIMEOUT:7d}
+  servlet:
+    multipart:
+      enabled: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  # Request bodies above this size are rejected by Tomcat.
+  tomcat:
+    max-http-form-post-size: 64KB
+    max-swallow-size: 64KB
+  error:
+    include-message: never
+    include-stacktrace: never
+  servlet:
+    session:
+      cookie:
+        name: SAVENEST_SESSION
+        http-only: true
+        secure: ${COOKIE_SECURE:true}
+        same-site: lax
+        path: /
+  # Only honour X-Forwarded-* when explicitly running behind a trusted proxy.
+  forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:none}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+savenest:
+  security:
+    bcrypt-strength: ${BCRYPT_STRENGTH:12}
+  rate-limit:
+    auth-per-minute: ${RATE_LIMIT_AUTH_PER_MINUTE:10}
+    max-tracked-keys: 100000
+    refresh-per-minute: ${RATE_LIMIT_REFRESH_PER_MINUTE:10}
+  worker:
+    # Set false in the web process when running a dedicated worker process.
+    enabled: ${WORKER_ENABLED:true}
+    poll-interval-ms: ${WORKER_POLL_INTERVAL_MS:2000}
+    batch-size: ${WORKER_BATCH_SIZE:5}
+    lease-seconds: ${WORKER_LEASE_SECONDS:60}
+    max-attempts: ${WORKER_MAX_ATTEMPTS:5}
+    backoff-base-seconds: ${WORKER_BACKOFF_BASE_SECONDS:30}
+    backoff-max-seconds: ${WORKER_BACKOFF_MAX_SECONDS:3600}
+  fetch:
+    connect-timeout-ms: ${FETCH_CONNECT_TIMEOUT_MS:4000}
+    read-timeout-ms: ${FETCH_READ_TIMEOUT_MS:8000}
+    total-timeout-ms: ${FETCH_TOTAL_TIMEOUT_MS:15000}
+    max-html-bytes: ${FETCH_MAX_HTML_BYTES:1048576}
+    max-image-bytes: ${FETCH_MAX_IMAGE_BYTES:2097152}
+    max-redirects: ${FETCH_MAX_REDIRECTS:5}
