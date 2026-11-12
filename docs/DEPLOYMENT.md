@@ -114,6 +114,18 @@ docker compose --profile app up --build
 # web: http://localhost:3000   backend: http://localhost:8080 (COOKIE_SECURE=false for plain HTTP)
 ```
 
+## Catalyst Slate (fixing a 404 after deploy)
+
+The 404 happens when Slate builds the repo root (no `package.json`, no build, no output dir) and deploys raw source. Configure:
+
+- Root directory: `savenest/frontend`
+- Install command: `npm ci`
+- Build command: `npm run build`
+- Node version: 22
+- `BACKEND_URL`: the public URL of the deployed Spring Boot backend (not `localhost:8080`)
+
+The frontend is a Next.js server app (rewrites, headers, dynamic routes), so it needs a Node runtime (`next start`). If Slate only serves static files, host the frontend on Render (`render.yaml`) or Docker instead. A static export (`output: 'export'`) would drop the `/api` rewrites and headers and break the same-origin cookie/XSRF setup.
+
 ## Known deployment limitations
 
 - Email/password auth only; no OAuth or password reset yet. Account deletion is available
